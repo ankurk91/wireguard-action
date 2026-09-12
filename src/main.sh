@@ -82,8 +82,12 @@ fi
 
 echo "=== Writing $WG_CONF_PATH ==="
 sudo mkdir -p /etc/wireguard
+
+# Create the file empty and already private, then write into it. `tee` would
+# create it under root's umask instead - 0644 on the runner images - leaving the
+# private key world-readable at a documented path until the mode was corrected.
+sudo install -m 600 /dev/null "$WG_CONF_PATH"
 printf '%s\n' "$INPUT_CONFIG" | sudo tee "$WG_CONF_PATH" > /dev/null
-sudo chmod 600 "$WG_CONF_PATH"
 
 echo "=== Starting $WG_INTERFACE ==="
 sudo wg-quick up "$WG_INTERFACE"
