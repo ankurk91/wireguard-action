@@ -126,11 +126,19 @@ case "$(peer_allowed_ips)" in
     echo
     echo "=== Verifying the handshake ==="
 
+    # Read the field as a number rather than comparing it to '0'. It comes back
+    # empty when the query itself failed - `wg show` erroring, the interface
+    # gone - and an empty string is not '0', so a failed query would otherwise
+    # be taken for a handshake and the check would pass the very tunnel it is
+    # there to catch.
     for _ in $(seq 5); do
-      if [ "$(peer_last_handshake)" != '0' ]; then
+      last_handshake="$(peer_last_handshake)"
+
+      if [[ $last_handshake =~ ^[0-9]+$ ]] && [ "$last_handshake" -gt 0 ]; then
         handshaked=1
         break
       fi
+
       sleep 1
     done
 
