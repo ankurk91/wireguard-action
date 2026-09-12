@@ -27,7 +27,7 @@ case "$WG_DIAGNOSTICS" in
 esac
 
 public_ip() {
-  curl -4 -s --connect-timeout 5 --max-time 10 https://api.ipify.org || echo 'unavailable'
+  curl -4 -s --connect-timeout 5 --max-time 10 https://icanhazip.com || echo 'unavailable'
 }
 
 # `wg show <interface> dump` prints the interface on the first line and each peer
@@ -110,25 +110,26 @@ if [ "$WG_DIAGNOSTICS" = 'true' ]; then
   ip route
 fi
 
-# Sending traffic is what makes WireGuard handshake, so this lookup is part of
-# the check below and not only a diagnostic. It runs either way; diagnostics
-# only decides whether the answer reaches the log.
-ip_after_vpn="$(public_ip)"
-
 if [ "$WG_DIAGNOSTICS" = 'true' ]; then
   echo
-  echo "Public IP after VPN: $ip_after_vpn"
+  echo "Public IP after VPN: $(public_ip)"
 fi
 
 # `wg-quick up` succeeds even when the peer is unreachable, and WireGuard stays
 # silent until it has traffic to send, so an unhealthy tunnel looks fine here.
-# The lookup above travels through the tunnel whenever the peer routes the whole
-# internet, so by now a working full tunnel has handshaked. A split tunnel sends
-# nothing in particular, so there is nothing to conclude from it.
+# Sending something through it is what settles the question - and only a peer
+# routing the whole internet gives us somewhere to send it. A split tunnel
+# carries nothing in particular, so there is nothing to conclude from it.
 case "$(peer_allowed_ips)" in
   *0.0.0.0/0*)
     echo
     echo "=== Verifying the handshake ==="
+
+    # Addressed to TEST-NET-1, which is reserved and routed nowhere: with the
+    # whole internet inside the tunnel the packet still leaves through the
+    # interface and starts the handshake, while no third party takes part in a
+    # check that runs on every job. Nothing answers, so the failure is expected.
+    curl -s --max-time 2 -o /dev/null http://192.0.2.1 || true
 
     # Read the field as a number rather than comparing it to '0'. It comes back
     # empty when the query itself failed - `wg show` erroring, the interface
