@@ -1,13 +1,14 @@
+# WireGuard VPN Action
+
 <p align="center">
   <img src=".github/banner.jpg" alt="WireGuard GitHub Action" width="100%">
 </p>
 
-# WireGuard VPN Action
-
 [![test](https://github.com/ankurk91/wireguard-action/actions/workflows/test.yaml/badge.svg)](https://github.com/ankurk91/wireguard-action/actions)
 [![lint](https://github.com/ankurk91/wireguard-action/actions/workflows/lint.yaml/badge.svg)](https://github.com/ankurk91/wireguard-action/actions)
 
-A GitHub Action that installs the WireGuard client on an Ubuntu runner and brings up a VPN tunnel from a config you
+A GitHub Action that installs the [WireGuard](https://www.wireguard.com/) client on an Ubuntu runner and brings up a VPN
+tunnel from a config you
 supply. The tunnel is torn down automatically when the job ends.
 
 ## Setup

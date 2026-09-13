@@ -1,13 +1,33 @@
+# Editors
 .idea/
 .vscode/
 .cursor/
-
-node_modules/
-
-*.log
-.env
 *.swp
-*.pem
-.act/
-*.conf
+*.swo
+*~
+
+# OS
 .DS_Store
+._*
+Thumbs.db
+desktop.ini
+
+# Node
+node_modules/
+npm-debug.log*
+.npm/
+
+# Secrets and local config - a WireGuard config is a private key in a text file
+*.conf
+*.key
+*.pem
+.env
+.env.*
+
+# Local action runs (nektos/act)
+.act/
+.secrets
+.actrc
+
+# Logs
+*.log
