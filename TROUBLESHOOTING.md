@@ -24,7 +24,7 @@ container. Either drop the `DNS =` line, or install a provider before connecting
 - run: sudo apt-get install -y openresolv
 ```
 
-## Cannot find device "wg0"` / `RTNETLINK answers: Operation not supported
+## Cannot find device "wg-github"` / `RTNETLINK answers: Operation not supported
 
 The runner's kernel has no WireGuard module. GitHub-hosted Ubuntu runners do; if you hit this on a self-hosted runner or
 inside a container, install the `wireguard` kernel module package on the host.

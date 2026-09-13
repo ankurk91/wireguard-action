@@ -2,7 +2,7 @@
 # Stop the tunnel and remove its config. Never fails the job.
 set -uo pipefail
 
-WG_INTERFACE="${INPUT_INTERFACE:-wg0}"
+WG_INTERFACE="${INPUT_INTERFACE:-wg-github}"
 WG_CONF_PATH="/etc/wireguard/${WG_INTERFACE}.conf"
 
 echo "=== Stopping $WG_INTERFACE ==="
@@ -32,6 +32,6 @@ if ! sudo rm -f "$WG_CONF_PATH"; then
   echo "::warning::could not remove $WG_CONF_PATH, it still holds this run's private key"
 fi
 
-echo "Wireguard cleanup completed."
+echo "Wireguard cleanup finished."
 
 exit 0

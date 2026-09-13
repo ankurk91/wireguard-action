@@ -2,7 +2,7 @@
 # Install WireGuard and bring up the tunnel.
 set -euo pipefail
 
-WG_INTERFACE="${INPUT_INTERFACE:-wg0}"
+WG_INTERFACE="${INPUT_INTERFACE:-wg-github}"
 WG_CONF_PATH="/etc/wireguard/${WG_INTERFACE}.conf"
 WG_DIAGNOSTICS="${INPUT_DIAGNOSTICS:-false}"
 
@@ -26,8 +26,37 @@ case "$WG_DIAGNOSTICS" in
     ;;
 esac
 
+diagnostics_enabled() {
+  [ "$WG_DIAGNOSTICS" = 'true' ]
+}
+
 public_ip() {
   curl -4 -s --connect-timeout 5 --max-time 10 https://icanhazip.com || echo 'unavailable'
+}
+
+# Everything here describes the network the runner is now on: the peer's
+# endpoint and public key, the tunnel's addresses, the full routing table. On a
+# self-hosted runner that is internal detail, and a job log is readable by more
+# people than the config is, so it is printed only when asked for.
+print_diagnostics() {
+  echo '::group::WireGuard diagnostics'
+
+  echo "Public IP before VPN: ${public_ip_before:-unavailable}"
+  echo "Public IP after VPN: $(public_ip)"
+
+  echo
+  echo "--- wg show $WG_INTERFACE ---"
+  sudo wg show "$WG_INTERFACE"
+
+  echo
+  echo "--- $WG_INTERFACE IP address ---"
+  ip -4 addr show "$WG_INTERFACE"
+
+  echo
+  echo '--- Routes ---'
+  ip route
+
+  echo '::endgroup::'
 }
 
 # `wg show <interface> dump` prints the interface on the first line and each peer
@@ -41,8 +70,10 @@ peer_last_handshake() {
   sudo wg show "$WG_INTERFACE" dump | sed -n '2p' | cut -f5
 }
 
-if [ "$WG_DIAGNOSTICS" = 'true' ]; then
-  echo "Public IP before VPN: $(public_ip)"
+# Read here, where it still means something, and held until the group below can
+# print it next to the address the tunnel ends up giving us.
+if diagnostics_enabled; then
+  public_ip_before="$(public_ip)"
 fi
 
 # apt is not the only thing on the runner that wants the dpkg lock - the image
@@ -92,27 +123,8 @@ printf '%s\n' "$INPUT_CONFIG" | sudo tee "$WG_CONF_PATH" > /dev/null
 echo "=== Starting $WG_INTERFACE ==="
 sudo wg-quick up "$WG_INTERFACE"
 
-# Everything below describes the network the runner is now on: the peer's
-# endpoint and public key, the tunnel's addresses, the full routing table. On a
-# self-hosted runner that is internal detail, and a job log is readable by more
-# people than the config is, so it is printed only when asked for.
-if [ "$WG_DIAGNOSTICS" = 'true' ]; then
-  echo
-  echo "=== WireGuard ==="
-  sudo wg show "$WG_INTERFACE"
-
-  echo
-  echo "=== $WG_INTERFACE IP address ==="
-  ip -4 addr show "$WG_INTERFACE"
-
-  echo
-  echo "=== Routes ==="
-  ip route
-fi
-
-if [ "$WG_DIAGNOSTICS" = 'true' ]; then
-  echo
-  echo "Public IP after VPN: $(public_ip)"
+if diagnostics_enabled; then
+  print_diagnostics
 fi
 
 # `wg-quick up` succeeds even when the peer is unreachable, and WireGuard stays

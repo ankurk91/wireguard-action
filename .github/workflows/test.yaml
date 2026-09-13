@@ -117,11 +117,11 @@ jobs:
 
       - name: Assert the interface came up
         run: |
-          ip link show wg0
-          test "$(sudo stat -c '%a' /etc/wireguard/wg0.conf)" = '600'
+          ip link show wg-github
+          test "$(sudo stat -c '%a' /etc/wireguard/wg-github.conf)" = '600'
 
           # Both ends must agree on the client's identity.
-          client_pub=$(sudo wg show wg0 public-key)
+          client_pub=$(sudo wg show wg-github public-key)
           docker exec wg-server wg show wg0 peers | grep -qxF "$client_pub"
           echo 'interface, config permissions and peer identity all correct'
 
@@ -129,13 +129,13 @@ jobs:
         run: |
           ping -c 3 -W 5 10.13.13.1
 
-          sudo wg show wg0
+          sudo wg show wg-github
 
           # `wg show <if> dump` is the documented machine-readable form: line 1 is
           # the interface, lines 2+ are peers, tab separated, with the fields
           # public-key, preshared-key, endpoint, allowed-ips, latest-handshake,
           # transfer-rx, transfer-tx, persistent-keepalive.
-          peer=$(sudo wg show wg0 dump | sed -n '2p')
+          peer=$(sudo wg show wg-github dump | sed -n '2p')
           handshake=$(printf '%s' "$peer" | cut -f5)
           received=$(printf '%s' "$peer" | cut -f6)
 

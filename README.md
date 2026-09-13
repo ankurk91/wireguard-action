@@ -1,3 +1,7 @@
+<p align="center">
+  <img src=".github/banner.jpg" alt="WireGuard GitHub Action" width="100%">
+</p>
+
 # WireGuard VPN Action
 
 [![test](https://github.com/ankurk91/wireguard-action/actions/workflows/test.yaml/badge.svg)](https://github.com/ankurk91/wireguard-action/actions)
@@ -36,7 +40,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test-wireguard:
+  wireguard:
     runs-on: ubuntu-latest
 
     steps:
@@ -54,11 +58,11 @@ There is no disconnect step to add.
 
 ## Inputs
 
-| Input         | Required | Default | Description                                                                 |
-|---------------|----------|---------|-----------------------------------------------------------------------------|
-| `config`      | **yes**  | —       | Full contents of the WireGuard config file. Always pass this from a secret. |
-| `interface`   | no       | `wg0`   | Interface name. Config is written to `/etc/wireguard/<interface>.conf`.     |
-| `diagnostics` | no       | `false` | Print the tunnel state to the job log. See [Diagnostics](#diagnostics).     |
+| Input         | Required | Default     | Description                                                                 |
+|---------------|----------|-------------|-----------------------------------------------------------------------------|
+| `config`      | **yes**  | —           | Full contents of the WireGuard config file. Always pass this from a secret. |
+| `interface`   | no       | `wg-github` | Interface name. Config is written to `/etc/wireguard/<interface>.conf`.     |
+| `diagnostics` | no       | `false`     | Print the tunnel state to the job log. See [Diagnostics](#diagnostics).     |
 
 ## Requirements
 
@@ -80,13 +84,8 @@ apparent reason. Split tunnels are left unchecked, since there is no way to tell
 
 ## Diagnostics
 
-With `diagnostics: true` the action prints `wg show`, the interface addresses, the routing table, and the runner's
-public IP before and after connecting.
-
-It is off by default because that output describes the network the runner is on — the peer's endpoint and public key,
-the tunnel's addresses, every route the runner holds. Job logs are visible to more people than the config is, and on a
-self-hosted runner behind a corporate network that is internal detail worth keeping out of them. Turn it on while
-debugging a tunnel, then turn it back off.
+With `diagnostics: true` the action adds a collapsed **WireGuard diagnostics** group to the job log holding the public
+IP before and after connecting, `wg show`, the interface addresses and the routing table.
 
 ## Troubleshooting
 
